@@ -1,0 +1,17 @@
+[
+ {
+   "ClientTier1Label": "Tier 1"
+ },
+ {
+   "ClientTier2Label": "Tier 2" 
+ },
+ {
+   "ClientTier3Label": "Tier 3" 
+ },
+ {
+   "ClientTier4Label": "Tier 4" 
+ },
+ {
+   "ClientTier5Label": "Tier 5" 
+ }
+]

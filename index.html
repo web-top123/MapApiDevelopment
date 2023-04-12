@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Taylor Farms Bright MAP | Customizable Network Services</title>
+    <meta name="description"
+          content="The worlds most profitable &amp; customizable network services." />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>-->
+
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css"
+          crossorigin="anonymous" />
+    <script src="axios.min.js"></script>
+    <script src="cities.js"></script>
+    <script src="dna-map-1.15.js"></script>
+    <script src="setmap.js"></script>
+    
+</head>
+
+<!-- TEST MAP  -->
+
+
+<body onload="passWord()" style="display: none">
+    <script>
+        function passWord() {
+            var testV = 1;
+            var pass1 = prompt("Please Enter Your Password", getCookie("pwd"));
+
+            while (testV < 3) {
+                if (!pass1) history.go(-1);
+                if (pass1.toLowerCase() == "taylorfarmsupgrade2022") { // keep lowercased
+                    document.getElementsByTagName("body")[0].style.display = "block";
+                    setCookie(pass1)
+                    break;
+                } else {
+                    var pass1 = prompt(
+                        "Access Denied - Password Incorrect, Please Try Again.",
+                        "Password"
+                    );
+                }
+                testV += 1;
+            }
+            if ((pass1.toLowerCase() != "newnetwork") && (testV == 3)) history.go(-1);
+        }
+
+        function setCookie(pwd) {
+            //console.log("setCookie")
+            //console.log(pwd)
+            var d = new Date();
+            d.setTime(d.getTime() + (73000 * 24 * 60 * 60 * 1000));
+            var expires = "expires=" + d.toUTCString();
+            document.cookie = "pwd" + "=" + pwd + ";" + expires + ";path=/";
+        }
+
+        function getCookie(pwd) {
+            var name = pwd + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            //console.log("document.cookie")
+            //console.log(document.cookie)
+            //console.log("decodedCookie")
+            //console.log(decodedCookie)
+            var ca = decodedCookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                    //console.log(pwd)
+
+                }
+            }
+            return "";
+        }
+    </script>
+    <div class="header">
+        <img src="images/taylor_farms_logo.png" alt="customer-logo" />
+    </div>
+
+    <div id="menuButton">
+        <button class="openbtn" onclick="toggleNavMapRoutes()">
+           <img src= "images/map_routes.svg" height="40px"/>
+           <div class="clear"></div>
+            <span> Map Routes</span>
+        </button>
+    </div>
+
+    <div id="savedRoutesButton">
+        <button class="openRoutes" onclick="toggleNavSavedRoutes()">
+           <img src= "images/saved_routes.svg" height="30px"/>
+           <div class="clear"></div>
+            <span>Saved Routes</span>
+        </button>
+    </div>
+
+    <!-- Distance Information in header -->
+    <div id="dvDistance"></div>
+    <div id="dvDistanceMark"></div>
+    <!--<div id="dvPanel" style="width: 500px; height: 500px"></div>-->
+    <!-- Map  -->
+
+
+    <div id="map"></div>
+
+    <!--  Sidebar  -->
+    <div id="mySidebar" class="sidebar">
+        <div class="search_location">
+            <div class="starting-loc">
+                <i class="far fa-circle"></i>
+                <input id="searchInput"
+                       class="controls"
+                       type="text"
+                       placeholder="Enter an Origin Address" />
+            </div>
+            <div class="end-loc">
+                <i class="fas fa-map-marker-alt"></i>
+                <input id="destinationInput"
+                       class="controls"
+                       type="text"
+                       placeholder="Enter a Destination Address" />
+            </div>
+
+
+            <!-- Clear Map -->
+            <div class="search_location_buttons mtm">
+                <span class="get_button pll">
+                    <i class=""></i>
+                    <input type="button" value="" onclick="GetRoute()" />
+                </span>
+
+                <span class="refresh_button">
+                    <i class=""></i>
+                    <input style="border-bottom:none!important" class="refresh" type="button" value="" onClick="clearEverything()">
+                </span>
+            </div>
+
+        </div> <!-- search location container-->
+        <!-- MENU Client Sites -->
+        <button class="collapsible">
+            <span>Client Resources</span> <i class="arrow right"></i>
+        </button>
+
+        <div class="menu-items">
+
+            <!--Data Center -->
+            <!--
+            <div class="container mts">
+                <input type="checkbox" onclick="toggleDataCenterMarkers(this);" />
+                <img src="images/customerdatacenter.svg" alt="datacenter" />
+                <span>Data Center </span>
+            </div>-->
+
+            <div class="container ">
+                <input type="checkbox" name="duke-access" id="duke-data-center"
+                       onclick="toggleDukeNetMarkersDataCenter(this);" /><img src="images/customerdatacenter.svg" alt="datacenter" /><span> Data Center </span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <span> Radius (ms): </span>
+                <input type="checkbox" onclick="toggle2msClientDCRadius(this);" /><span>2 </span>
+                <input type="checkbox" onclick="toggle5msClientDCRadius(this);" /><span>5 </span>
+                <input type="checkbox" onclick="toggle10msClientDCRadius(this);" /><span>10</span>
+                <input type="checkbox" onclick="toggle20msClientDCRadius(this);" /><span>20 </span>
+                <button id="addDrawBtn" class="openbtn" onclick="drawingToggle()"><span>Add Location</span></button>
+            </div>
+
+            <!--AWS Region -->
+            <div class="container mts">
+                <input type="checkbox" id="aws-region" name="aws-region" onclick="toggleClientAWSMarkers(this);" />
+                <img src="images/clientaws.svg" alt="clientaws" />
+                <span> AWS Regions in Use </span>
+
+            </div>
+
+            <div class="container">
+                <span> Radius (ms): </span>
+                <input type="checkbox" onclick="toggle2msClientAWSRadius(this);" /><span>2 </span>
+                <input type="checkbox" onclick="toggle5msClientAWSRadius(this);" /><span>5 </span>
+                <input type="checkbox" onclick="toggle10msClientAWSRadius(this);" /><span>10</span>
+                <input type="checkbox" onclick="toggle20msClientAWSRadius(this);" /><span>20 </span>
+                <button id="addDrawBtn" class="openbtn" onclick="slidebox(this, 'AWSCities')"><span>Add Location</span></button>
+
+            </div>
+
+            <div class="container mts">
+                <!--Azure -->
+                <input type="checkbox" id="azure" onclick="toggleClientAzureMarkers(this);" />
+                <img src="images/clientazure.png" alt="clientazure" />
+                <span> Azure Regions in Use </span>
+            </div>
+
+            <div class="container">
+                <span> Radius (ms): </span>
+                <input type="checkbox" onclick="toggle2msClientAzureRadius(this);" /><span>2 </span>
+                <input type="checkbox" onclick="toggle5msClientAzureRadius(this);" /><span>5 </span>
+                <input type="checkbox" onclick="toggle10msClientAzureRadius(this);" /><span>10 </span>
+                <input type="checkbox" onclick="toggle20msClientAzureRadius(this);" /><span>20 </span>
+                <button id="addDrawBtn" class="openbtn" onclick="slidebox(this, 'AzureCities')"><span>Add Location</span></button>
+            </div>
+
+            <!--SaaS -->
+            <div class="container mts">
+                <input type="checkbox" id="saas-in-use" onclick="toggleClientSaaSMarkers(this);" />
+                <img src="images/clientsaas.png" alt="clientaws" />
+                <span>SaaS in Use </span>
+            </div>
+
+            <!--Client Peering Points
+            <div class="container mts">
+                <input type="checkbox" id="client-peering-points" onclick="toggleClientPeeringPoints(this);" />
+                <span>Client Peering Points </span>
+            </div>
+
+
+            <div class="container plxl">
+                <img src="images/clientperformancehub.svg" alt="nxp" />
+                <span> Performance Hub </span>
+            </div>
+
+            <div class="container plxl">
+                <span> Radius (ms): </span>
+                <input type="checkbox" onclick="toggleClientHubs2msPeerRadius(this);" /><span>2 </span>
+                <input type="checkbox" onclick="toggleClientPerformanceHubs5msPeerRadius(this);" /><span>5 </span>
+                <input type="checkbox" onclick="toggleClientPerformanceHubs10msPeerRadius(this);" /><span>10 </span>
+                <input type="checkbox" onclick="toggleClientPerformanceHubs20msPeerRadius(this);" /><span>20 </span>
+            </div>
+
+
+            <div class="container plxl">
+                <img src="images/clienttransporthub.svg" alt="nxp" />
+                <span> Transport Hub </span>
+            </div>
+
+            <div class="container plxl">
+                <span> Radius (ms): </span>
+                <input type="checkbox" onclick="toggleClientHubs2msPeerRadius(this);" /><span>2 </span>
+                <input type="checkbox" onclick="toggleClientTransportHubs5msPeerRadius(this);" /><span>5 </span>
+                <input type="checkbox" onclick="toggleClientTransportHubs10msPeerRadius(this);" /><span>10 </span>
+                <input type="checkbox" onclick="toggleClientTransportHubs20msPeerRadius(this);" /><span>20 </span>
+            </div> -->
+
+
+            <div class="clear"></div>
+        </div>
+
+        <!-- MENU Client Sites -->
+        <button class="collapsible">
+            <span> Client Sites</span> <i class="arrow right"></i>
+        </button>
+
+        <div class="menu-items">
+            <div class="container">
+                <img src="images/1cityicon.svg" alt="cities" /><input type="checkbox" name="duke-access" id="duke-access-point"
+                       onclick="toggleFarmClient(this, 'AHSS', '1cityicon.svg');" />
+                <span>AHSS</span>
+                
+
+                <div class="clear"></div>
+            </div>
+
+
+            <div class="container">
+                <img src="images/2cityicon.svg" alt="cities" /><input type="checkbox" id="duke-battery"
+                       onclick="toggleFarmClient(this, 'ARWM', '2cityicon.svg');" /><span>ARWM</span>
+                <div class="clear"></div>
+            </div>
+
+
+            <div class="container">
+                <img src="images/3cityicon.svg" alt="cities" /><input type="checkbox" id="duke-campus"
+                       onclick="toggleFarmClient(this, 'BAJA', '3cityicon.svg');" /><span>BAJA</span>
+                <div class="clear"></div>
+            </div>
+
+
+            <div class="container">
+                <img src="images/4cityicon.svg" alt="cities" /><input type="checkbox" id="duke-cell"
+                       onclick="toggleFarmClient(this, 'BPSN', '4cityicon.svg');" /><span>BPSN</span>
+                <div class="clear"></div>
+            </div>
+
+
+            <div class="container">
+                <img src="images/5cityicon.svg" alt="cities" /><input type="checkbox" id="duke-copop"
+                       onclick="toggleFarmClient(this, 'CASA', '5cityicon.svg');" /><span>CASA</span>
+                <div class="clear"></div>
+            </div>
+
+
+            <div class="container">
+                <img src="images/6cityicon.svg" alt="cities" /><input type="checkbox" id="duke-electric-substation"
+                       onclick="toggleFarmClient(this, 'CASH', '6cityicon.svg');" /><span>CASH</span>
+                <div class="clear"></div>
+            </div>
+
+
+            <div class="container">
+                <img src="images/7cityicon.svg" alt="cities" /><input type="checkbox" id="duke-electric-plant"
+                       onclick="toggleFarmClient(this, 'CASS', '7cityicon.svg');" /><span>CASS</span>
+                <div class="clear"></div>
+            </div>
+
+
+            <div class="container">
+                <img src="images/8cityicon.svg" alt="cities" /><input type="checkbox" id="duke-mlsp"
+                       onclick="toggleFarmClient(this, 'CAYG', '8cityicon.svg');" /><span>CAYG</span>
+                <div class="clear"></div>
+            </div>
+
+
+            <div class="container">
+                <img src="images/9cityicon.svg" alt="cities" /><input type="checkbox" id="duke-nuclear-plant"
+                       onclick="toggleFarmClient(this, 'COCN', '9cityicon.svg');" /><span>COCN</span>
+                <div class="clear"></div>
+            </div>
+
+
+            <div class="container">
+                <img src="images/10cityicon.svg" alt="cities" /><input type="checkbox" id="duke-nuclear-siren"
+                       onclick="toggleFarmClient(this, 'EBFS', '10cityicon.svg');" /><span>EBFS</span>
+                <div class="clear"></div>
+            </div>
+
+
+            <div class="container">
+                <img src="images/12cityicon.svg" alt="cities" /><input type="checkbox" id="duke-office"
+                       onclick="toggleFarmClient(this, 'EBSJ', '12cityicon.svg');" /><span>EBSJ</span>
+                <div class="clear"></div>
+            </div>
+
+
+            <div class="container">
+                <img src="images/13cityicon.svg" alt="cities" /><input type="checkbox" id="duke-piedmont"
+                       onclick="toggleFarmClient(this, 'TFFFI/EBSJ', '13cityicon.svg');" /><span>TFFFI/EBSJ</span>
+                <div class="clear"></div>
+            </div>
+
+
+            <div class="container">
+                <img src="images/14cityicon.svg" alt="cities" /><input type="checkbox" id="duke-power"
+                       onclick="toggleFarmClient(this, 'EBYA', '14cityicon.svg');" /><span>EBYA</span>
+                <div class="clear"></div>
+            </div>
+
+
+            <div class="container">
+                <img src="images/15cityicon.svg" alt="cities" /><input type="checkbox" id="duke-switch"
+                       onclick="toggleFarmClient(this, 'FIFH', '15cityicon.svg');" /><span>FIFH</span>
+                <div class="clear"></div>
+            </div>
+
+
+            <div class="container">
+                <img src="images/16cityicon.svg" alt="cities" /><input type="checkbox" id="duke-siren"
+                       onclick="toggleFarmClient(this, 'Starbucks', '16cityicon.svg');" /><span>Starbucks</span>
+                <div class="clear"></div>
+            </div>
+
+
+            <div class="container">
+                <img src="images/17cityicon.svg" alt="cities" /><input type="checkbox" id="duke-staging"
+                       onclick="toggleFarmClient(this, 'CASONA', '17cityicon.svg');" /><span>CASONA</span>
+                <div class="clear"></div>
+            </div>
+
+
+            <div class="container">
+                <img src="images/18cityicon.svg" alt="cities" /><input type="checkbox" id="duke-tower"
+                       onclick="toggleFarmClient(this, '4th floor', '18cityicon.svg');" /><span> 4th floor</span>
+                <div class="clear"></div>
+            </div>
+
+
+            <div class="container">
+                <img src="images/19cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'PORTOBELLOS', '19cityicon.svg');" /><span>PORTOBELLOS</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/20cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'FLO2', '20cityicon.svg');" /><span>FLO2</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/21cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'FLOA', '21cityicon.svg');" /><span>FLOA</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/22cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'FL COOLER', '22cityicon.svg');" /><span>FL COOLER</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/23cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'FLOC', '23cityicon.svg');" /><span>FLOC</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/24cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'FLOT', '24cityicon.svg');" /><span>FLOT</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/25cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'GYM', '25cityicon.svg');" /><span>GYM</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/26cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'KYCL', '26cityicon.svg');" /><span>KYCL</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/6cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'LANC', '6cityicon.svg');" /><span>LANC</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/27cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'MDAJ', '27cityicon.svg');" /><span>MDAJ</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/18cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'MDNB', '18cityicon.svg');" /><span>MDNB</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/19cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'Mission Ranches', '19cityicon.svg');" /><span>Mission Ranches</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/1cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'MXDM', '1cityicon.svg');" /><span>MXDM</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/2cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'NENC', '2cityicon.svg');" /><span>NENC</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/3cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'NJSH', '3cityicon.svg');" /><span>NJSH</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/4cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'NSCH', '4cityicon.svg');" /><span>NSCH</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/5cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'NSLV', '5cityicon.svg');" /><span>NSLV</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/27cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'PATC', '27cityicon.svg');" /><span>PATC</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/6cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'PATM', '6cityicon.svg');" /><span>PATM</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/7cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'PFCA', '7cityicon.svg');" /><span>PFCA</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/8cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'PFCW', '8cityicon.svg');" /><span>PFCW</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/9cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'RFK2', '9cityicon.svg');" /><span>RFK2</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/10cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'CANX', '10cityicon.svg');" /><span>CANX</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/11cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'SCOL', '11cityicon.svg');" /><span>SCOL</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/12cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'SWAZ', '12cityicon.svg');" /><span>SWAZ</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/13cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'TAIR', '13cityicon.svg');" /><span>TAIR</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/14cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'TFXO', '14cityicon.svg');" /><span>TFXO</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/15cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'TLCY', '15cityicon.svg');" /><span>TLCY</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/16cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'TNSS', '16cityicon.svg');" /><span>TNSS</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/17cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'TNWW', '17cityicon.svg');" /><span>TNWW</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/18cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'TXDB', '18cityicon.svg');" /><span>TXDB</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/19cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'TXDC', '19cityicon.svg');" /><span>TXDC</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/20cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'TXDT', '20cityicon.svg');" /><span>TXDT</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/21cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'TFXZ', '21cityicon.svg');" /><span>TFXZ</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/22cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'TFXZ Cross Connects', '22cityicon.svg');" /><span>TFXZ Cross Connects</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/23cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'VIGP', '23cityicon.svg');" /><span>VIGP</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/24cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'CNTO', '24cityicon.svg');" /><span>CNTO</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/25cityicon.svg" alt="cities" /><input type="checkbox" id="duke-wind-plant"
+                       onclick="toggleFarmClient(this, 'MD Jessup', '25cityicon.svg');" /><span>MD Jessup</span>
+                <div class="clear"></div>
+            </div>
+
+        </div>
+
+        <!-- MENU Cities -->
+        <button class="collapsible">
+            <span> Peering Sites</span> <i class="arrow right"></i>
+        </button>
+
+        <div class="menu-items" id="citiesDetails">
+
+            <div class="container pull-left">
+                <p class="pls">Radius(ms)</p>
+            </div>
+
+            <div class="container">
+                <p class="pls">City</p>
+            </div>
+
+            <div class="clear"></div>
+
+            <div class="container">
+                <input type="checkbox" name="cityname" value="Ashburn" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/primaryhub_city_chicagoashburn.svg" alt="cities" />
+                <span> Ashburn (Primary Hub) </span>
+
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Ashburn', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Ashburn', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Ashburn', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Ashburn', 20);" /><span>20 </span>
+                </span>
+
+            </div>
+
+
+
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Chicago" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/primaryhub_city_chicagoashburn.svg" alt="cities" />
+                <span> Chicago (Primary Hub) </span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Chicago', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Chicago', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Chicago', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Chicago', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Amsterdam" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/1cityicon.svg" alt="cities" />
+                <span> Amsterdam </span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Amsterdam', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Amsterdam', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Amsterdam', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Amsterdam', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Beijing" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/2cityicon.svg" alt="cities" />
+                <span> Beijing</span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Beijing', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Beijing', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Beijing', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Beijing', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Dallas" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/3cityicon.svg" alt="cities" />
+                <span> Dallas </span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Dallas', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Dallas', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Dallas', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Dallas', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Denver" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/4cityicon.svg" alt="cities" />
+                <span> Denver</span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Denver', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Denver', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Denver', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Denver', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Dubai" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/5cityicon.svg" alt="cities" />
+                <span> Dubai </span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Dubai', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Dubai', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Dubai', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Dubai', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Frankfurt" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/6cityicon.svg" alt="cities" />
+                <span> Frankfurt</span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Frankfurt', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Frankfurt', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Frankfurt', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Frankfurt', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Hong_Kong" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/7cityicon.svg" alt="cities" />
+                <span> Hong Kong</span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Hong Kong', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Hong Kong', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Hong Kong', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Hong Kong', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Ireland" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/8cityicon.svg" alt="cities" />
+                <span> Ireland</span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Ireland', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Ireland', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Ireland', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Ireland', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="London" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/9cityicon.svg" alt="cities" />
+                <span> London </span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'London', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'London', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'London', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'London', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Los_Angeles" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/10cityicon.svg" alt="cities" />
+                <span>Los Angeles</span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Los Angeles', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Los Angeles', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Los Angeles', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Los Angeles', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Melbourne" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/12cityicon.svg" alt="cities" />
+                <span> Melbourne</span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Melbourne', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Melbourne', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Melbourne', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Melbourne', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Miami" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/13cityicon.svg" alt="cities" />
+                <span> Miami </span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Miami', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Miami', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Miami', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Miami', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Mumbai" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/14cityicon.svg" alt="cities" />
+                <span> Mumbai </span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Mumbai', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Mumbai', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Mumbai', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Mumbai', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="New_York" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/15cityicon.svg" alt="cities" />
+                <span> New York</span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'New York', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'New York', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'New York', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'New York', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Osaka" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/16cityicon.svg" alt="cities" />
+                <span> Osaka</span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Osaka', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Osaka', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Osaka', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Osaka', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Paris" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/17cityicon.svg" alt="cities" />
+                <span> Paris </span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Paris', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Paris', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Paris', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Paris', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="San_Jose" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/18cityicon.svg" alt="cities" />
+                <span> San Jose</span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'San Jose', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'San Jose', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'San Jose', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'San Jose', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Seattle" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/19cityicon.svg" alt="cities" />
+                <span> Seattle</span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Seattle', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Seattle', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Seattle', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Seattle', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Shanghai" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/20cityicon.svg" alt="cities" />
+                <span> Shanghai</span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Shanghai', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Shanghai', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Shanghai', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Shanghai', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Singapore" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/21cityicon.svg" alt="cities" />
+                <span> Singapore</span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Singapore', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Singapore', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Singapore', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Singapore', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Sydney" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/22cityicon.svg" alt="cities" />
+                <span> Sydney </span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Sydney', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Sydney', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Sydney', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Sydney', 20);" /><span>20 </span>
+                </span>
+            </div>
+
+
+            <div class="container mts">
+                <input type="checkbox" name="cityname" value="Tokyo" onclick="toggleCitiesUpdated(this.value,this);" />
+                <img src="images/23cityicon.svg" alt="cities" />
+                <span> Tokyo</span>
+                <span class="pull-right">
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Tokyo', 2);" /><span>2 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Tokyo', 5);" /><span>5 </span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Tokyo', 10);" /><span>10</span>
+                    <input type="checkbox" onclick="toggleClientPeeringSitesRadius(this, 'Tokyo', 20);" /><span>20 </span>
+                </span>
+            </div>
+        </div>
+
+        <!-- MENU Networking -->
+        <button class="collapsible">
+            <span> Networking </span><i class="arrow right"></i>
+        </button>
+
+        <div class="menu-items">
+            <div class="container">
+                <input type="checkbox" id="networking-peering-point" onclick="toggleNetworkPeer(this);" />
+                <img src="images/networkpeer.svg" alt="nxp" />
+                <span> Network Peering Point </span>
+            </div>
+
+            <div class="container">
+                <span> Radius (ms): </span>
+                <input type="checkbox"
+                       onclick="toggleNetwork2msPeerRadius(this);" /><span>2 </span>
+                <input type="checkbox"
+                       onclick="toggleNetwork5msPeerRadius(this);" /><span>5 </span>
+                <input type="checkbox"
+                       onclick="toggleNetwork10msPeerRadius(this);" /><span>10 </span>
+                <input type="checkbox"
+                       onclick="toggleNetwork20msPeerRadius(this);" /><span>20 </span>
+            </div>
+
+            <!-- Internet Exchange Points-->
+            <div id="legendsubheader">
+                <span>Internet Exchange Points </span>
+            </div>
+
+            <div class="container">
+                <input type="checkbox" id="iep-tier1" onclick="toggleTier1IXP(this);" />
+                <img src="images/ixp1.png" alt="ixp" />
+                <span>Tier 1 </span>
+            </div>
+
+            <div class="container">
+                <input type="checkbox" id="iep-tier2" onclick="toggleTier2IXP(this);" />
+                <img src="images/ixp2.png" alt="ixp" />
+                <span>Tier 2 </span>
+            </div>
+
+            <div class="container">
+                <input type="checkbox" id="azuriep-tier3" onclick="toggleTier3IXP(this);" />
+                <img src="images/ixp3.png" alt="ixp" />
+                <span>Tier 3 </span>
+            </div>
+        </div>
+
+        <!-- MENU Cloud Services -->
+        <button class="collapsible">
+            <span> Cloud Services</span> <i class="arrow right"></i>
+        </button>
+
+        <div class="menu-items">
+            <!-- AWS -->
+            <div class="container">
+                <input type="checkbox" id="aws-cloud-services" onclick="toggleAWSMarkers(this);" />
+                <img src="images/aws.svg" alt="aws" />
+                <span> AWS </span>
+            </div>
+
+            <div class="container">
+                <span> Radius (ms): </span>
+                <input type="checkbox" onclick="toggle2msAWSRadius(this);" /><span>
+                    2
+                </span>
+                <input type="checkbox" onclick="toggle5msAWSRadius(this);" />
+                <span>5 </span>
+                <input type="checkbox" onclick="toggle10msAWSRadius(this);" /><span>
+                    10
+                </span>
+                <input type="checkbox" onclick="toggle20msAWSRadius(this);" /><span>
+                    20
+                </span>
+            </div>
+
+            <!-- AWS Direct Connect-->
+            <div class="container">
+                <input type="checkbox" id="aws-direct-connect" onclick="toggleCoLocationWithAWSDC(this);" />
+                <img src="images/awsdc.png" alt="awsdc" />
+                <span> AWS Direct Connect</span>
+            </div>
+
+            <!-- Azure -->
+            <div class="container">
+                <input type="checkbox" id="azure-cloud-services" onclick="toggleAzureMarkers(this);" />
+                <img src="images/azure.svg" alt="azure" />
+                <span> Azure</span>
+            </div>
+
+            <div class="container">
+                <span> Radius (ms): </span>
+                <input type="checkbox" onclick="toggle2msAzureRadius(this);" />
+                <span>2 </span>
+                <input type="checkbox" onclick="toggle5msAzureRadius(this);" />
+                <span>5 </span>
+                <input type="checkbox" onclick="toggle10msAzureRadius(this);" /><span>
+                    10
+                </span>
+                <input type="checkbox" onclick="toggle20msAzureRadius(this);" /><span>
+                    20
+                </span>
+            </div>
+
+            <!-- Azure ExpressRoute -->
+            <div class="container">
+                <input type="checkbox" id="azure-expressroute" onclick="toggleCoLocationWithAzureER(this);" />
+                <img src="images/azureer.svg" alt="azureer" />
+                <span>Azure ExpressRoute</span>
+            </div>
+
+            <!-- Google Cloud -->
+            <div class="container">
+                <input type="checkbox" id="google.cloud" onclick="toggleGoogleMarkers(this);" />
+                <img src="images/googlecloud.png" alt="googlecloud" />
+                <span> Google Cloud</span>
+            </div>
+
+            <!-- Salesforce -->
+            <div class="container">
+                <input type="checkbox" id="salesforce" onclick="toggleSalesforceMarkers(this);" />
+                <img src="images/salesforce.svg" alt="salesforce" />
+                <span> Salesforce </span>
+            </div>
+
+            <!-- Service Now -->
+            <div class="container">
+                <input type="checkbox" id="service-now" onclick="toggleServiceNowMarkers(this);" />
+                <img src="images/servicenow.svg" alt="servicenow" />
+                <span> ServiceNow </span>
+            </div>
+
+            <!-- Virtustream -->
+            <div class="container">
+                <input type="checkbox" id="virtustream" onclick="toggleVirtustreamMarkers(this);" />
+                <img src="images/virtustream.svg" alt="Virtustream" />
+                <span> Virtustream </span>
+            </div>
+
+            <!-- SAP -->
+            <div class="container">
+                <input type="checkbox" id="sap" onclick="toggleSAPMarkers(this);" />
+                <img src="images/sap.svg" alt="SAP" />
+                <span> SAP </span>
+            </div>
+        </div>
+
+        <!-- MENU Colocation Services -->
+        <button class="collapsible">
+            <span> Colocation Services</span> <i class="arrow right"></i>
+        </button>
+
+        <div class="menu-items">
+            <div class="container">
+                <input type="checkbox" id="all-colocation" onclick="toggleCoLocationMarkers(this);" />
+                <img src="images/colocation.svg" alt="colocation" />
+                <span> All CoLocation</span>
+            </div>
+
+            <!-- Equinix -->
+            <div class="container">
+                <input type="checkbox" id="equinix" onclick="toggleEquinixColo(this);" />
+                <img src="images/equinix.svg" alt="equinixcolo" />
+                <span>Equinix</span>
+            </div>
+
+            <!-- Cyrus One -->
+            <div class="container">
+                <input type="checkbox" id="cyrus-one" onclick="toggleCyrusOneColo(this);" />
+                <img src="images/cyrusone.svg" alt="equinixcolo" />
+                <span> Cyrus One </span>
+            </div>
+
+            <!-- Digital Realty -->
+            <div class="container">
+                <input type="checkbox" id="digital-reality" onclick="toggleDigitalRealtyColo(this);" />
+                <img src="images/digitalrealty.svg" alt="equinixcolo" />
+                <span>Digital Realty </span>
+            </div>
+
+            <!-- Level 3 -->
+            <div class="container">
+                <input type="checkbox" id="level-3" onclick="toggleLevel3Colo(this);" />
+                <img src="images/level3.svg" alt="level3" />
+                <span>Level3 </span>
+            </div>
+
+            <!-- Cyxtera -->
+            <div class="container">
+                <input type="checkbox" id="cyxtera" onclick="toggleCyxteraColo(this);" />
+                <img src="images/cyxtera.png" alt="Cyxtera" />
+                <span>Cyxtera </span>
+            </div>
+
+            <!-- Interxion -->
+            <div class="container">
+                <input type="checkbox" id="interxion" onclick="toggleInterxionColo(this);" />
+                <img src="images/interxion.svg" alt="interxion" />
+                <span>Interxion </span>
+            </div>
+
+            <!-- CoreSite -->
+            <div class="container">
+                <input type="checkbox" id="coresite" onclick="toggleCoreSiteColo(this);" />
+                <img src="images/coresite.svg" alt="Coresite" />
+                <span> CoreSite </span>
+            </div>
+
+
+        </div>
+
+        <!-- Menu Vendor Parent -->
+        <button class="collapsible">
+            <span>Vendor Parent</span> <i class="arrow right"></i>
+        </button>
+
+        <div class="menu-items vendor-menu">
+            <div class="container">
+                <img src="images/1cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'ACC', '1cityicon.svg');" />
+                <span>ACC</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/2cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'AT&T', '2cityicon.svg');" />
+                <span>AT&T</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/3cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'BEAMSPEED', '3cityicon.svg');" />
+                <span>BEAMSPEED</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/4cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'CENTURYLINK', '4cityicon.svg');" />
+                <span>CENTURYLINK</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/5cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'COMCAST', '5cityicon.svg');" />
+                <span>COMCAST</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/6cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'COX', '6cityicon.svg');" />
+                <span>COX</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/7cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'GTT COMMUNICATIONS INC', '7cityicon.svg');" />
+                <span>GTT COMMUNICATIONS INC</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/8cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'HYPERCORE NETWORKS INC', '8cityicon.svg');" />
+                <span>HYPERCORE NETWORKS INC</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/9cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'JOB ARTURO MORALES DURAN', '9cityicon.svg');" />
+                <span>JOB ARTURO MORALES DURAN</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/10cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'Konecta', '10cityicon.svg');" />
+                <span>Konecta</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/12cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'KONECTA TELECOMUNICACIONES', '12cityicon.svg');" />
+                <span>KONECTA TELECOMUNICACIONES</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/13cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'LEVEL3', '13cityicon.svg');" />
+                <span>LEVEL3</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/14cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'MEGACABLE', '14cityicon.svg');" />
+                <span>MEGACABLE</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/15cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'MOMENTUM', '15cityicon.svg');" />
+                <span>MOMENTUM</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/16cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'MOMENTUM TELECOM', '16cityicon.svg');" />
+                <span>MOMENTUM TELECOM</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/17cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'ONE RING NETWORKS', '17cityicon.svg');" />
+                <span>ONE RING NETWORKS</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/18cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'RAZZOLINK', '18cityicon.svg');" />
+                <span>RAZZOLINK</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/20cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'RISE BROADBAND', '20cityicon.svg');" />
+                <span>RISE BROADBAND</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/21cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'SPECTRUM', '21cityicon.svg');" />
+                <span>SPECTRUM</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/22cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'TELMEX', '22cityicon.svg');" />
+                <span>TELMEX</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/23cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'Telnor', '23cityicon.svg');" />
+                <span>Telnor</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/24cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'THE MAYNARD GROUP', '24cityicon.svg');" />
+                <span>THE MAYNARD GROUP</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/25cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'TIME WARNER', '25cityicon.svg');" />
+                <span>TIME WARNER</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/26cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'TOTAL PLAY TELECOMUNICACIONES S.A. DE C.V.', '26cityicon.svg');" />
+                <span>TOTAL PLAY TELECOMUNICACIONES S.A. DE C.V.</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/27cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'ULTIMATE INTERNET ACCESS, INC', '27cityicon.svg');" />
+                <span>ULTIMATE INTERNET ACCESS, INC</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/1cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'VERIZON', '1cityicon.svg');" />
+                <span>VERIZON</span>
+                <div class="clear"></div>
+            </div>
+
+            <div class="container">
+                <img src="images/2cityicon.svg" alt="cities" />
+                <input type="checkbox"
+                       onclick="toggleFarmVendor(this, 'ZAYO GROUP LLC', '2cityicon.svg');" />
+                <span>ZAYO GROUP LLC</span>
+                <div class="clear"></div>
+            </div>
+        </div>        
+    </div>   <!-- SIDEBAR END -->
+
+    <!-- My Routes -->
+    <div id="RoutesSidebar" class="openRoutes pull-right" style="display:none">
+        <ul>
+            
+        </ul>
+    </div>
+
+ 
+    <script async
+            defer
+            src="https://maps.googleapis.com/maps/api/js?libraries=places,drawing&key=AIzaSyA3T3GjoAQPRXrGB9yUIA-jQkAUdtxHx68&callback=initMap"></script>
+
+    <script>
+        initMenu();
+
+        // Menu Sidebar
+        function toggleNavMapRoutes() {
+            if (document.getElementById("mySidebar").style.width === "285px") {
+                $('.newboxes').each(function (index) {
+                    $(this).slideUp(200);
+                });
+                document.getElementById("mySidebar").style.width = "0";
+                document.getElementById("menuButton").style.marginLeft = "0";
+               
+            } else {
+                document.getElementById("mySidebar").style.width = "285px";
+                document.getElementById("menuButton").style.marginLeft = "280px";
+                document.getElementById("menuButton").style.transition = "height .5s";
+                collapseMenu();
+            }
+        }
+
+
+    
+        // Menu Items
+        function initMenu() {
+            var coll = document.getElementsByClassName("collapsible");
+            var i;
+
+            for (i = 0; i < coll.length; i++) {
+                coll[i].addEventListener("click", function () {
+                    this.classList.toggle("active");
+                    var content = this.nextElementSibling;
+                    if (content.style.display === "block") {
+                        content.style.display = "none";
+                    } else {
+                        content.style.display = "block";
+                    }
+                });
+            }
+            showSavedRouteList();
+        }
+        function collapseMenu() {
+            var coll = document.getElementsByClassName("collapsible");
+            var i;
+
+            for (i = 0; i < coll.length; i++) {
+                var content = coll[i].nextElementSibling;
+                content.style.display = "none";
+            }
+        }
+        function expandMenu() {
+            var coll = document.getElementsByClassName("collapsible");
+            var i;
+
+            for (i = 0; i < coll.length; i++) {
+                var content = coll[i].nextElementSibling;
+                content.style.display = "block";
+            }
+        }
+        function slidebox(obj, chosen) {
+            if ($('#' + chosen).is(":visible ")) {
+                $('#' + chosen).slideUp(200);
+                return;
+            }
+            $('.newboxes').each(function (index) {
+                var posT = $(obj).parent().position().top;
+                $(this).css('top', posT);
+                if ($(this).attr("id") == chosen) {
+                    $(this).slideDown(200);
+                }
+                else {
+                    $(this).slideUp(200);
+                }
+            });
+        }
+    </script>
+
+    <script type="text/javascript">
+        
+        // routes Sidebar
+        function toggleNavSavedRoutes() {
+            if (document.getElementById("RoutesSidebar").style.width === "285px") {
+                document.getElementById("RoutesSidebar").style.width = "0";
+                document.getElementById("RoutesSidebar").style.display = "none";
+               
+            } else {
+                document.getElementById("RoutesSidebar").style.width = "285px";
+                document.getElementById("RoutesSidebar").style.display = "inline-block";
+                document.getElementById("savedRoutesButton").style.transition = "height .5s";
+                collapseMenu();
+            }
+        }
+
+    </script>
+
+
+  
+
+
+    <div class="newboxes" id="AWSCities">
+
+    </div>
+    <div class="newboxes" id="AzureCities">
+
+    </div>
+</body>
+</html>

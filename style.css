@@ -1,0 +1,629 @@
+/* //////////////////////////////////////// */
+/* ///// Bright Map CSS Styling 2021 ///// */
+/* /////////////////////////////////////// */
+
+body {
+  font-family: "Lato", sans-serif;
+}
+
+/* Font */
+@font-face {
+  font-family: corbell;
+  src: url("fonts/corbell.tiff");
+}
+
+/* Google API Fields  */
+#mySidebar {
+  padding-top: 0px !important;
+}
+#mySidebar .search_location {
+  background: #3471a6;
+  padding: 10px 40px 10px 10px;
+  position: relative;
+  margin-bottom: 15px;
+}
+#mySidebar .search_location::before {
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  content: "\f142";
+  position: absolute;
+  left: 12px;
+  top: 37px;
+  color: #95cdff;
+  height: 123px;
+}
+.refresh_button input[type="button"] {
+  background: #0f4c81;
+  color: #fff;
+/* border: 1px solid #fff!important; */
+/* border-radius: 5px; */
+  margin: 10px 15px;
+  cursor: pointer;
+  border-bottom: 2px solid #fff !important;
+}
+#mySidebar .search_location input {
+  background: transparent;
+  border-bottom: 2px solid #95cdff !important;
+  border: 0px solid;
+  color: #fff;
+  width: 90%;
+  margin-bottom: 10px;
+  line-height: 30px;
+  outline: 0;
+  font-size: 13px;
+  height: auto;
+  margin-left: 20px;
+}
+
+/*  Add Location  */
+.pac-target-input input {
+  background: transparent;
+  border-bottom: 2px solid #95cdff !important;
+  border: 0px solid;
+  color: #fff;
+  width: 90%;
+  margin-bottom: 10px;
+  line-height: 30px;
+  outline: 0;
+  font-size: 13px;
+  height: auto;
+  margin-left: 20px;
+}
+
+#pac-input {
+  display: block;
+  z-index: 0;
+  position: absolute;
+  top: 5px!important;
+  left: 362px!important;
+  width: 212px;
+  height: 30px;
+}
+
+
+#pac-input::placeholder {
+  color: #0f4c81!important;
+  opacity: 1; /* Firefox */
+}
+
+#addDrawBtn.openbtn {
+font-size: 15px!important;
+padding: 5px 10px 5px 10px;
+background: #0f4c81;
+margin: 10px 0px;
+}
+
+.gmnoprint {
+ /* margin: 5px;
+  z-index: 10;
+  position: absolute;
+  top: 100px!important;
+  left: 573px; */
+
+}
+
+/* Origin and Destination */
+.starting-loc,
+.end-loc {
+  position: relative;
+}
+.starting-loc i,
+.end-loc i {
+  color: #fff;
+  position: absolute;
+  left: 0px;
+  top: 10px;
+  font-size: 10px;
+  content: "";
+}
+#mySidebar .search_location ::-webkit-input-placeholder,
+#map ::-webkit-input-placeholder {
+  color: #95cdff;
+}
+
+#mySidebar .search_location :-ms-input-placeholder,
+#map :-ms-input-placeholder {
+  color: #95cdff;
+}
+
+#mySidebar .search_location ::placeholder,
+#map ::placeholder {
+  color: #95cdff;
+}
+
+::placeholder {
+  color: #95cdff !important;
+}
+input#destination-input {
+  margin-left: 0px;
+}
+/****-- Get Route Button
+
+.get_button i {
+  position: absolute;
+  right: -25px;
+  top: -60px;
+  transform: rotate(90deg);
+  color: #95cdff;
+  cursor: pointer;
+}
+.get_button {
+  position: relative;
+}
+#mySidebar .search_location .get_button input {
+  position: absolute;
+  top: -68px;
+  border-bottom: transparent !important;
+  width: 15% !important;
+  right: -40px;
+  cursor: pointer;
+}
+****/
+
+.get_button i {
+  background-image: url(images/get_route_icon.png);
+  height: 25px;
+  width: 30px;
+  display: inline-block;
+  /*position: absolute;
+  right: -32px;
+  top: -50px;*/
+}
+
+.get_button {
+  position: relative;
+}
+#mySidebar .search_location .get_button input {
+  position: absolute;
+  top: -5px;
+  border-bottom: transparent !important; 
+  width: 25px;
+  left: -4px;
+  cursor: pointer;
+}
+
+#dvDistance {
+  position: absolute;
+  top: 17px;
+  right: 169px;
+  color: #965dce;
+  font-size: 14px;
+}
+
+.distancewrapper {
+width: 200px;
+}
+
+.refresh_button i {
+  background-image: url(images/refresh_icon.svg);
+  height: 25px;
+  width: 25px;
+  display: inline-block;
+}
+
+
+/*.refresh_button input {
+  background: transparent;
+  border-bottom: 2px solid #95cdff !important;
+  border: 0px solid;
+  color: #fff;
+  width: 25px!important;
+  margin-bottom: 10px;
+  line-height: 30px;
+  outline: 0;
+  font-size: 13px;
+  height: auto;
+  margin-left: 20px;
+  border : 1px solid;
+}*/
+
+.refresh_button input[type="button"] {
+width: 25px!important;
+position: absolute;
+top: 85px;
+left: 39px;
+}
+
+
+/* Google API Fields End  */
+
+.header {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 250px;
+  padding: 30px;
+}
+
+.collapsible {
+  cursor: pointer;
+  width: 260px;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 12px;
+  transition: 0.3s;
+  background: none;
+  transition: height 350ms ease-in-out;
+}
+
+.sidebar {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 60px;
+  background-color: #e8f0f9;
+  background-color: #0f4c81;
+}
+
+.sidebar a {
+  padding: 8px 8px 8px 32px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+  transition: 0.3s;
+}
+
+.sidebar a:hover {
+  color: #f1f1f1;
+}
+
+.sidebar .closebtn {
+  position: absolute;
+  top: 0;
+  right: 5px;
+  font-size: 12px;
+  margin-left: 5px;
+}
+
+.sidebar button {
+  font-size: 18px;
+  color: #fff;
+  padding: 3px;
+  padding-left: 15px;
+}
+
+.sidebar .innerUL {
+  margin: 0 5px 0 5px;
+}
+.sidebar span.clear {
+  clear: both;
+}
+
+.openbtn {
+  font-size: 12px;
+  cursor: pointer;
+  border: none;
+  transition: 0.3s;
+  padding: 0;
+  background: none;
+  color: #0f4c81;
+  padding: 10px;
+}
+
+.openbtn:focus {
+  outline: none;
+}
+
+.openbtn:hover {
+}
+
+#menuButton {
+  transition: margin-left 0.5s;
+  padding: 0 0 0 20px;
+  
+  position: absolute;
+  top: 8px;
+  z-index: 99;
+}
+
+#savedRoutesButton {
+  transition: margin-left 0.5s;
+  padding: 0 0 0 20px;
+  width: 100%;
+  position: absolute;
+  top: 13px;
+  /*right: -1307px;*/
+  z-index: 99;
+  right:0;
+
+}
+
+.openRoutes{
+  background: #fff;
+  color: #1f4478;
+  display: block;
+  border: none;
+  position: absolute;
+  right: 0;
+  
+}
+
+.openRoutes ul {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 10px;
+}
+
+.openRoutes ul li{
+  margin: 0 0 10px 0;
+}
+
+#dvDistance button {
+  position: absolute;
+  top: 25px;
+  background: #965dce;
+  color: #fff;
+  font-size: 14px;
+  padding: 5px;
+  margin: 10px 0 0 0;
+  border: none;
+}
+
+
+@media only screen and (max-width: 600px) {
+  #menuButton {
+    top: 55px;
+    padding: 0;
+    position: inherit;
+  }
+}
+
+#toggleButton {
+  transition: margin-left 0.5s;
+  padding: 6px;
+  width: 20%;
+  white-space: nowrap;
+}
+
+/* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
+@media screen and (max-height: 450px) {
+  .sidebar {
+    padding-top: 15px;
+  }
+  .sidebar a {
+    font-size: 18px;
+  }
+}
+/* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+input {
+  vertical-align: middle;
+  position: relative;
+}
+#map {
+  height: 90%;
+  width: 100%;
+  float: left;
+  border-top: 1px solid #0f4c81;
+}
+.menu {
+  height: 130px;
+  width: 100%;
+  display: inline;
+  border-style: solid;
+  border-width: 0px 0px 2px 0px;
+}
+/* Clear floats after the menu */
+.menu:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.headerText {
+  display: inline-block;
+  float: right;
+  font-size: 36px;
+  margin: 5px;
+}
+.submenu {
+  height: 70px;
+  float: left;
+  display: inline;
+  font-size: 11px;
+  background-color: #f8f0e0;
+  border-style: solid;
+  border-width: 1px 1px 1px 1px;
+  margin: 5px;
+}
+.submenulabel {
+  font-weight: bold;
+  height: 15px;
+  float: left;
+  display: inline;
+  font-size: 12px;
+  background-color: #f8f0e0;
+}
+.submenudata {
+  float: left;
+  padding-right: 15px;
+  padding-bottom: 5px;
+  height: 55px;
+  display: inline;
+  font-size: 11px;
+  background-color: #f8f0e0;
+}
+.menubutton {
+  float: bottom;
+  display: inline;
+  font-size: 11px;
+  margin: 5px;
+}
+.title {
+  width: 100%;
+  float: left;
+  font-size: 16px;
+  font-weight: bold;
+}
+.datapanel {
+  height: 80%;
+  width: 300px;
+  float: right;
+}
+#detaildata {
+  padding: 5px;
+}
+/* Optional: Makes the sample page fill the window. */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+.map-control {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 2px rgba(33, 33, 33, 0.4);
+  font-family: "Roboto", "sans-serif";
+  margin: 10px;
+  padding-right: 5px;
+  /* Hide the control initially, to prevent it from appearing before the map loads. */
+  display: none;
+}
+
+/* Display the control once it is inside the map. */
+#map .map-control {
+  display: block;
+}
+
+.selector-control {
+  font-size: 14px;
+  line-height: 30px;
+  vertical-align: baseline;
+}
+#legendtitle {
+  font-family: Arial, sans-serif;
+  margin: 10px;
+  font-size: 14px;
+  font-weight: normal;
+}
+#legend {
+  font-family: Arial, sans-serif;
+  background: #fff;
+  padding: 11px;
+  margin: 11px;
+  border: 1px solid #000;
+  font-size: 11px;
+}
+#legendheader {
+  font-family: Arial, sans-serif;
+  background: #fff;
+  font-size: 10px;
+  font-weight: normal;
+}
+#legendsubheader {
+  font-size: 11px;
+  font-weight: normal;
+  margin-left: 10px;
+  margin-top: 6px;
+}
+#legenddata,
+.menu-items {
+  font-size: 14px !important;
+  background: #fff;
+  padding: 10px 0;
+}
+#legenddata img,
+.menu-items img {
+  vertical-align: middle;
+}
+
+#legend h3 {
+  margin-top: 0;
+}
+#legend img {
+  vertical-align: middle;
+}
+.newboxes {
+    background-color: #fff;
+    display: none;
+    padding: 5px;
+    width: 250px;
+    position: absolute;
+    top: 45px;
+    left: 353px;
+    cursor: auto;
+    height: 150px;
+    overflow-y: scroll;
+    border: 1px solid #95cdff;
+}
+.arrow {
+  border: solid #fff;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 3px;
+}
+
+.right {
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+}
+
+.left {
+  transform: rotate(135deg);
+  -webkit-transform: rotate(135deg);
+}
+
+.up {
+  transform: rotate(-135deg);
+  -webkit-transform: rotate(-135deg);
+}
+
+.down {
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+
+.sidebar button:hover right {
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+
+/* OOCSS General Styling */
+.mts {
+  margin-top: 5px;
+}
+
+.mtm {
+  margin-top: 10px;
+}
+
+.pls {
+  padding-left: 5px;
+}
+
+.plm {
+  padding-left: 10px;
+}
+
+.pll {
+  padding-left: 15px;
+}
+
+.plxl {
+  padding-left: 20px;
+}
+
+.pull-right {
+  float: right;
+  padding-right: 10px;
+}
+
+.pull-left {
+  float: right;
+  padding-right: 10px;
+}
+
+.block {
+  display: block;
+}
+
+.center {
+  text-align:center;
+}

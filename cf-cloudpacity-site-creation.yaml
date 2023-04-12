@@ -1,0 +1,205 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Creates a Cloudfront distribution sourced from aS3 bucket configured for hosting Northern Trust's DNA Map, and a Route 53 DNS record pointing to the bucket
+
+Parameters:
+  SiteName:
+    Type: String
+    Description: The name of the DNA site which will be the prefix of the domain. e.g. bob would be bob.cloudpacity.com
+    Default: ntrs
+    
+  DomainName:
+    Type: String
+    Description: The DNS name of an existing Amazon Route 53 hosted zone e.g. jevsejev.io
+    AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<!-)
+    Default: cloudpacity.com
+    ConstraintDescription: must be a valid DNS zone name.
+    
+  R53HostedZoneId:
+    Type: String
+    Description: The Route53 hosted zone id for the domain specified above
+    Default: Z1LB947NKAPQ3J
+    ConstraintDescription: must be a valid Route 53 hosted zone Id.    
+    
+  R53AliasHostedZoneId:
+    Type: String
+    Description: The Route53 alias hosted zone id for the site
+    Default: Z2FDTNDATAQYW2
+    ConstraintDescription: must be a valid Route 53 hosted zone Id.    
+    
+  AcmCertificateArn:
+    Type: String
+    Description: the Amazon Resource Name (ARN) of an AWS Certificate Manager (ACM) certificate.
+    AllowedPattern: "arn:aws:acm:.*"
+    Default: 'arn:aws:acm:us-east-1:061059955913:certificate/deb9e085-6f67-4377-b8d2-feaa7ce791c3'
+    
+  LambdaRoleArn:
+    Type: String
+    Description: the Amazon Resource Name (ARN) of the role for the lambda auth function
+    Default: 'arn:aws:iam::061059955913:role/service-role/cloudfront-lambda-auth'    
+
+Resources:
+  # CREATE S3 Content Bucket
+    WebsiteBucket:
+        Type: AWS::S3::Bucket
+        Properties:
+          BucketName: !Join ['', [!Ref 'SiteName', '-cloudpacity-com']]
+          AccessControl: Private
+    
+    LambaCloudfrontAuth: 
+        Type: AWS::Lambda::Function
+        Properties: 
+          FunctionName: !Join ['', [!Ref 'SiteName', 'LambaCloudfrontAuth']]  
+          Handler: 'index.handler'
+          Role: !Ref LambdaRoleArn
+          Code: 
+            ZipFile: >
+                /**
+                * BASIC Authentication
+                *
+                * Simple authentication script intended to be run by Amazon Lambda to
+                * provide Basic HTTP Authentication for a static website hosted in an
+                * Amazon S3 bucket through Couldfront.
+                *
+                * https://hackernoon.com/serverless-password-protecting-a-static-website-in-an-aws-s3-bucket-bfaaa01b8666
+                */
+                 
+                'use strict';
+                 
+                exports.handler = (event, context, callback) => {
+                 
+                    // Get request and request headers
+                    const request = event.Records[0].cf.request;
+                    const headers = request.headers;
+                 
+                    // Configure authentication
+                    const authUser = 'ntrs';
+                    const authPass = 'NTRS@2019';
+                 
+                    console.log('header auth:' + headers.authorization); 
+                 
+                    // Construct the Basic Auth string
+                    const authString = 'Basic ' + new Buffer(authUser + ':' + authPass).toString('base64');
+                 
+                    // Require Basic authentication
+                    if (typeof headers.authorization == 'undefined' || headers.authorization[0].value != authString) {
+                        const body = 'Unauthorized';
+                        const response = {
+                            status: '401',
+                            statusDescription: 'Unauthorized',
+                            body: body,
+                            headers: {
+                                'www-authenticate': [{key: 'WWW-Authenticate', value:'Basic'}]
+                            },
+                        };
+                        callback(null, response);
+                    }
+                 
+                    // Continue request processing if authentication passed
+                    callback(null, request);
+                };
+          Runtime: 'nodejs12.x'
+          Timeout: 5
+
+          
+  # CREATE Cldoufront Distribution        
+    WebsiteCloudfront:
+        Type: AWS::CloudFront::Distribution
+        DependsOn:
+        - WebsiteBucket
+        - TheCloudFrontOriginAccessIdentity
+#        - LambaCloudfrontAuth
+        Properties:
+          DistributionConfig:
+            Comment: !Join ['', [!Ref 'SiteName', ' DNA Map']]
+            Origins:
+            - DomainName: !Join [ '', [!Ref SiteName, '-cloudpacity-com.s3.amazonaws.com' ]]
+              Id: !Join [ '', ['S3-', !Ref SiteName, '-cloudpacity-com' ]]
+              S3OriginConfig:
+                 OriginAccessIdentity:
+                    !Join [ "", [ "origin-access-identity/cloudfront/", !Ref TheCloudFrontOriginAccessIdentity ] ]
+            Enabled: true
+            HttpVersion: 'http2'
+            DefaultRootObject: index.html
+            Aliases:
+            - !Join [ '', [!Ref SiteName, ".", !Ref 'DomainName' ]]
+            DefaultCacheBehavior:
+              AllowedMethods:
+              - GET
+              - HEAD
+              Compress: true
+              TargetOriginId: !Join [ '', ['S3-', !Ref SiteName, '-cloudpacity-com' ]]
+              ForwardedValues:
+                QueryString: false
+                Cookies:
+                  Forward: none
+              ViewerProtocolPolicy: redirect-to-https
+              DefaultTTL: 300
+              ViewerProtocolPolicy: allow-all
+            # CacheBehaviors:          
+            # - TargetOriginId: !Join [ '', ['S3-', !Ref SiteName, '-cloudpacity-com' ]]
+              # ViewerProtocolPolicy: redirect-to-https
+              # PathPattern: '*'
+              # ForwardedValues: 
+                # QueryString: false
+              LambdaFunctionAssociations:
+              - EventType: viewer-request
+                LambdaFunctionARN: 'arn:aws:lambda:us-east-1:061059955913:function:test-cloudfront-uath:2'     
+            PriceClass: PriceClass_All
+            ViewerCertificate:
+              AcmCertificateArn: !Ref AcmCertificateArn
+              SslSupportMethod: sni-only
+
+          
+  #CREATE Route53 DNS Entries        
+    WebsiteDNSName:
+        Type: AWS::Route53::RecordSetGroup
+        Properties:
+            HostedZoneId: !Ref R53HostedZoneId
+            RecordSets:
+            - Name: !Join [ '', [!Ref SiteName, ".", !Ref 'DomainName', '.' ]]
+              Type: A
+              AliasTarget:
+                HostedZoneId: !Ref R53AliasHostedZoneId
+                DNSName: !GetAtt 'WebsiteCloudfront.DomainName'
+        
+  # CREATE the Origin Access identity to restrict S3 to this cloudfront distribution        
+    TheCloudFrontOriginAccessIdentity:
+        Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+        Properties:
+          CloudFrontOriginAccessIdentityConfig:
+            Comment: !Join ['', ['The origin identity for ',!Ref 'SiteName']]
+        
+    BucketPolicy: 
+        Type: AWS::S3::BucketPolicy
+        DependsOn:
+        - WebsiteBucket
+        - WebsiteCloudfront    
+        Properties: 
+            Bucket: !Ref WebsiteBucket
+            PolicyDocument: 
+              Statement: 
+                - 
+                  Sid: "CloudfrontAccess"
+                  Action: 
+                    - "s3:GetObject"
+                  Effect: "Allow"
+                  Resource: !Join ['', [ 'arn:aws:s3:::', !Ref 'SiteName', '-cloudpacity-com', '/*']]
+                  Principal: 
+                    AWS: !Join ['', ['arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ',!Ref 'TheCloudFrontOriginAccessIdentity']] 
+             
+
+        
+Outputs:
+  BucketName:
+    Value: !Ref 'WebsiteBucket'
+    Description: Name of S3 bucket to hold website content
+  CloudfrontEndpoint:
+    Value: !GetAtt [WebsiteCloudfront, DomainName]
+    Description: Endpoint for Cloudfront distribution
+  LambdaFunction:
+    Value: !Ref 'LambaCloudfrontAuth'
+    Description: Name of Lambda Auth function   
+  FullDomain:
+    Value: !Join [ '', [!Ref SiteName, ".", !Ref 'DomainName' ]]
+    Description: Full DomainName
